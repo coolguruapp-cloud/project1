@@ -109,6 +109,38 @@ const CircularProgress = ({ value, size = 120 }: { value: number, size?: number 
   );
 };
 
+// --- Constants & Initial Data ---
+
+const INITIAL_DATA = {
+  users: [
+    { id: "1", email: "mohan@protrack.com", password: "1234", name: "Mohan Y", role: "ADMIN" },
+    { id: "2", email: "tejas@protrack.com", password: "2411", name: "Tejas K", role: "USER" },
+    { id: "3", email: "pooja@protrack.com", password: "4321", name: "Pooja Y", role: "USER" }
+  ],
+  tasks: [
+    { id: "101", week: 1, focusArea: "Design", task: "Finalize UI Mockups", owner: "Mohan Y", priority: "High", status: "Completed", completion: 100, startDate: "2026-03-01", deadline: "2026-03-05", notes: "Approved by client" },
+    { id: "102", week: 1, focusArea: "Backend", task: "Setup Database Schema", owner: "Tejas K", priority: "High", status: "Completed", completion: 100, startDate: "2026-03-02", deadline: "2026-03-06", notes: "Using local JSON for now" },
+    { id: "103", week: 2, focusArea: "Frontend", task: "Implement Dashboard Layout", owner: "Pooja Y", priority: "Medium", status: "In Progress", completion: 65, startDate: "2026-03-08", deadline: "2026-03-15", notes: "Charts integrated" },
+    { id: "104", week: 2, focusArea: "Auth", task: "JWT Implementation", owner: "Tejas K", priority: "High", status: "In Progress", completion: 80, startDate: "2026-03-09", deadline: "2026-03-14", notes: "Testing middleware" },
+    { id: "105", week: 3, focusArea: "Reporting", task: "PDF Export Feature", owner: "Mohan Y", priority: "Medium", status: "Not Started", completion: 0, startDate: "2026-03-16", deadline: "2026-03-22", notes: "Using jspdf" }
+  ],
+  logs: []
+};
+
+const storage = {
+  getData: () => {
+    const data = localStorage.getItem('protrack_data');
+    if (!data) {
+      localStorage.setItem('protrack_data', JSON.stringify(INITIAL_DATA));
+      return INITIAL_DATA;
+    }
+    return JSON.parse(data);
+  },
+  saveData: (data: any) => {
+    localStorage.setItem('protrack_data', JSON.stringify(data));
+  }
+};
+
 // --- Main App ---
 
 export default function App() {
@@ -130,31 +162,10 @@ export default function App() {
   const [aiResponse, setAiResponse] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
 
-  const api = {
-    get: (url: string) => fetch(url, { headers: { 'Authorization': `Bearer ${token}` } }).then(res => res.json()),
-    post: (url: string, body: any) => fetch(url, { 
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify(body)
-    }).then(res => res.json()),
-    put: (url: string, body: any) => fetch(url, { 
-      method: 'PUT', 
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify(body)
-    }).then(res => res.json()),
-    delete: (url: string) => fetch(url, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } })
-  };
-
   useEffect(() => {
-    fetch('/api/public/users')
-      .then(res => res.json())
-      .then(data => setPublicUsers(data))
-      .catch(err => console.error('Failed to fetch public users', err));
-
-    fetch('/api/public/tasks')
-      .then(res => res.json())
-      .then(data => setPublicTasks(data))
-      .catch(err => console.error('Failed to fetch public tasks', err));
+    const data = storage.getData();
+    setPublicUsers(data.users.map((u: any) => ({ email: u.email, name: u.name })));
+    setPublicTasks(data.tasks);
   }, []);
 
   useEffect(() => {
@@ -167,47 +178,35 @@ export default function App() {
     }
   }, [token]);
 
-  const fetchData = async () => {
+  const fetchData = () => {
     setLoading(true);
-    try {
-      const [tasksData, logsData] = await Promise.all([
-        api.get('/api/tasks'),
-        api.get('/api/logs')
-      ]);
-      setTasks(tasksData);
-      setLogs(logsData);
-      
-      if (user?.role === 'ADMIN') {
-        const usersData = await api.get('/api/users');
-        setUsers(usersData);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+    const data = storage.getData();
+    
+    if (user?.role === 'ADMIN') {
+      setTasks(data.tasks);
+      setUsers(data.users);
+    } else {
+      setTasks(data.tasks.filter((t: any) => t.owner === user?.name));
     }
+    setLogs(data.logs.slice(-50).reverse());
+    setLoading(false);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(loginForm)
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setToken(data.token);
-        setUser(data.user);
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-      } else {
-        setLoginError(data.message || 'Login failed');
-      }
-    } catch (err) {
-      setLoginError('Server error');
+    const data = storage.getData();
+    const foundUser = data.users.find((u: any) => u.email === loginForm.email && u.password === loginForm.password);
+    
+    if (foundUser) {
+      const { password, ...userWithoutPassword } = foundUser;
+      const mockToken = 'mock-jwt-' + Math.random().toString(36).substr(2);
+      setToken(mockToken);
+      setUser(userWithoutPassword);
+      localStorage.setItem('token', mockToken);
+      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+    } else {
+      setLoginError('Invalid email or password');
     }
   };
 
@@ -218,16 +217,83 @@ export default function App() {
     localStorage.removeItem('user');
   };
 
-  const updateTask = async (taskId: string, updates: Partial<Task>) => {
-    try {
-      const updated = await api.put(`/api/tasks/${taskId}`, updates);
-      setTasks(tasks.map(t => t.id === taskId ? updated : t));
-      // Refresh logs
-      const logsData = await api.get('/api/logs');
-      setLogs(logsData);
-    } catch (err) {
-      console.error(err);
+  const updateTask = (taskId: string, updates: Partial<Task>) => {
+    const data = storage.getData();
+    const index = data.tasks.findIndex((t: any) => t.id === taskId);
+    if (index === -1) return;
+
+    const oldTask = data.tasks[index];
+    const updatedTask = { ...oldTask, ...updates };
+    
+    if (updatedTask.status === 'Completed') {
+      updatedTask.completion = 100;
     }
+
+    data.tasks[index] = updatedTask;
+    data.logs.push({
+      id: Date.now().toString(),
+      userName: user?.name,
+      taskUpdated: updatedTask.task,
+      oldStatus: oldTask.status,
+      newStatus: updatedTask.status,
+      completion: updatedTask.completion,
+      timestamp: new Date().toISOString()
+    });
+
+    storage.saveData(data);
+    fetchData();
+  };
+
+  const addTask = (newTask: any) => {
+    const data = storage.getData();
+    const taskWithId = { ...newTask, id: Date.now().toString() };
+    data.tasks.push(taskWithId);
+    data.logs.push({
+      id: Date.now().toString(),
+      userName: user?.name,
+      taskUpdated: taskWithId.task,
+      oldStatus: "N/A",
+      newStatus: taskWithId.status,
+      completion: taskWithId.completion,
+      timestamp: new Date().toISOString()
+    });
+    storage.saveData(data);
+    fetchData();
+  };
+
+  const deleteTask = (taskId: string) => {
+    const data = storage.getData();
+    data.tasks = data.tasks.filter((t: any) => t.id !== taskId);
+    storage.saveData(data);
+    fetchData();
+  };
+
+  const addUser = (newUser: any) => {
+    const data = storage.getData();
+    const userWithId = { ...newUser, id: Date.now().toString() };
+    data.users.push(userWithId);
+    storage.saveData(data);
+    fetchData();
+  };
+
+  const deleteUser = (userId: string) => {
+    const data = storage.getData();
+    data.users = data.users.filter((u: any) => u.id !== userId);
+    storage.saveData(data);
+    fetchData();
+  };
+
+  const importTasks = (newTasks: any[]) => {
+    const data = storage.getData();
+    const processedTasks = newTasks.map(t => ({
+      ...t,
+      id: Math.random().toString(36).substr(2, 9),
+      completion: parseInt(t.completion) || 0,
+      week: parseInt(t.week) || 1
+    }));
+    data.tasks = [...data.tasks, ...processedTasks];
+    storage.saveData(data);
+    fetchData();
   };
 
   // --- Calculations ---
@@ -817,7 +883,7 @@ export default function App() {
                                 Papa.parse(file, {
                                   header: true,
                                   complete: (results) => {
-                                    api.post('/api/import-tasks', { tasks: results.data }).then(() => fetchData());
+                                    importTasks(results.data);
                                   }
                                 });
                               }
