@@ -7,7 +7,7 @@ export interface User {
 
 export interface Task {
   id: string;
-  week: number;
+  week: string;
   focusArea: string;
   task: string;
   owner: string;

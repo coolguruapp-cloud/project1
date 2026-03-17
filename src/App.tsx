@@ -31,7 +31,7 @@ import {
 import { Bar, Pie, Doughnut } from 'react-chartjs-2';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { GoogleGenAI } from "@google/genai";
@@ -72,9 +72,10 @@ const ProgressBar = ({ value, color = "bg-emerald-500" }: { value: number, color
 );
 
 const CircularProgress = ({ value, size = 120 }: { value: number, size?: number }) => {
+  const safeValue = isNaN(value) ? 0 : Math.min(100, Math.max(0, value));
   const radius = (size - 10) / 2;
   const circumference = radius * 2 * Math.PI;
-  const offset = circumference - (value / 100) * circumference;
+  const offset = circumference - (safeValue / 100) * circumference;
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
@@ -118,23 +119,56 @@ const INITIAL_DATA = {
     { id: "3", email: "pooja@protrack.com", password: "4321", name: "Pooja Y", role: "USER" }
   ],
   tasks: [
-    { id: "101", week: 1, focusArea: "Design", task: "Finalize UI Mockups", owner: "Mohan Y", priority: "High", status: "Completed", completion: 100, startDate: "2026-03-01", deadline: "2026-03-05", notes: "Approved by client" },
-    { id: "102", week: 1, focusArea: "Backend", task: "Setup Database Schema", owner: "Tejas K", priority: "High", status: "Completed", completion: 100, startDate: "2026-03-02", deadline: "2026-03-06", notes: "Using local JSON for now" },
-    { id: "103", week: 2, focusArea: "Frontend", task: "Implement Dashboard Layout", owner: "Pooja Y", priority: "Medium", status: "In Progress", completion: 65, startDate: "2026-03-08", deadline: "2026-03-15", notes: "Charts integrated" },
-    { id: "104", week: 2, focusArea: "Auth", task: "JWT Implementation", owner: "Tejas K", priority: "High", status: "In Progress", completion: 80, startDate: "2026-03-09", deadline: "2026-03-14", notes: "Testing middleware" },
-    { id: "105", week: 3, focusArea: "Reporting", task: "PDF Export Feature", owner: "Mohan Y", priority: "Medium", status: "Not Started", completion: 0, startDate: "2026-03-16", deadline: "2026-03-22", notes: "Using jspdf" }
+    { id: "1", week: "Week 1", focusArea: "Research & Partner Alignment", task: "Finalize business partner", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "2", week: "Week 1", focusArea: "Research & Partner Alignment", task: "Discuss business vision and goals", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "3", week: "Week 1", focusArea: "Research & Partner Alignment", task: "Define roles and responsibilities", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "4", week: "Week 1", focusArea: "Market Research", task: "Create list of 20–30 target societies", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "5", week: "Week 1", focusArea: "Market Research", task: "Estimate families and students in societies", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "6", week: "Week 1", focusArea: "Market Research", task: "Conduct parent discussions", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "7", week: "Week 1", focusArea: "Market Research", task: "Identify high-demand subjects", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "8", week: "Week 1", focusArea: "Market Research", task: "Study nearby tuition centers and fees", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "9", week: "Week 1", focusArea: "Market Research", task: "Prepare initial revenue estimation", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "10", week: "Week 1", focusArea: "Market Research", task: "Shortlist top 5 societies", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "11", week: "Week 2", focusArea: "Business Setup", task: "Decide business structure", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "12", week: "Week 2", focusArea: "Business Setup", task: "Draft partner agreement", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "13", week: "Week 2", focusArea: "Business Setup", task: "Define profit sharing model", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "14", week: "Week 2", focusArea: "Society Partnerships", task: "Meet society committees", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "15", week: "Week 2", focusArea: "Society Partnerships", task: "Present tuition concept", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "16", week: "Week 2", focusArea: "Society Partnerships", task: "Check hall availability", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "17", week: "Week 2", focusArea: "Teacher Hiring", task: "Identify potential teachers", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "18", week: "Week 2", focusArea: "Teacher Hiring", task: "Conduct teacher interviews", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "19", week: "Week 3", focusArea: "Marketing", task: "Create brand name/logo", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "20", week: "Week 3", focusArea: "Marketing", task: "Design posters and flyers", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "21", week: "Week 3", focusArea: "Marketing", task: "Create WhatsApp promotion message", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "22", week: "Week 3", focusArea: "Marketing", task: "Create Google registration form", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "23", week: "Week 3", focusArea: "Marketing", task: "Share promotions in society groups", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "24", week: "Week 3", focusArea: "Marketing", task: "Conduct parent orientation meeting", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "25", week: "Week 3", focusArea: "Finance Setup", task: "Define teacher payment structure", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "26", week: "Week 3", focusArea: "Finance Setup", task: "Create expense tracking sheet", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "27", week: "Week 4", focusArea: "Operations Setup", task: "Finalize student batches", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "28", week: "Week 4", focusArea: "Operations Setup", task: "Assign teachers", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "29", week: "Week 4", focusArea: "Operations Setup", task: "Create class timetable", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "30", week: "Week 4", focusArea: "Operations Setup", task: "Arrange whiteboard and seating", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "31", week: "Week 4", focusArea: "Operations Setup", task: "Setup attendance tracking", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "32", week: "Week 4", focusArea: "Operations Setup", task: "Share timetable with parents", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" },
+    { id: "33", week: "Execution", focusArea: "Launch", task: "Start first tuition batch", owner: "", priority: "Medium", status: "Not Started", completion: 0, startDate: "", deadline: "", notes: "" }
   ],
   logs: []
 };
 
 const storage = {
   getData: () => {
-    const data = localStorage.getItem('protrack_data');
-    if (!data) {
-      localStorage.setItem('protrack_data', JSON.stringify(INITIAL_DATA));
+    try {
+      const data = localStorage.getItem('protrack_data');
+      if (!data) {
+        localStorage.setItem('protrack_data', JSON.stringify(INITIAL_DATA));
+        return INITIAL_DATA;
+      }
+      return JSON.parse(data);
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
       return INITIAL_DATA;
     }
-    return JSON.parse(data);
   },
   saveData: (data: any) => {
     localStorage.setItem('protrack_data', JSON.stringify(data));
@@ -144,9 +178,10 @@ const storage = {
 // --- Main App ---
 
 export default function App() {
+  console.log('App mounting...');
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const [view, setView] = useState<'dashboard' | 'my-tasks' | 'reports' | 'admin'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'task-board' | 'reports' | 'admin'>('dashboard');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -154,8 +189,6 @@ export default function App() {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [publicUsers, setPublicUsers] = useState<{ email: string, name: string }[]>([]);
-  const [publicTasks, setPublicTasks] = useState<Task[]>([]);
-  const [showPublicTasks, setShowPublicTasks] = useState(false);
 
   // AI Assistant State
   const [aiQuery, setAiQuery] = useState('');
@@ -165,14 +198,20 @@ export default function App() {
   useEffect(() => {
     const data = storage.getData();
     setPublicUsers(data.users.map((u: any) => ({ email: u.email, name: u.name })));
-    setPublicTasks(data.tasks);
   }, []);
 
   useEffect(() => {
     if (token) {
-      const savedUser = localStorage.getItem('user');
-      if (savedUser) setUser(JSON.parse(savedUser));
-      fetchData();
+      try {
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        }
+        fetchData();
+      } catch (error) {
+        console.error('Error parsing user from localStorage:', error);
+        handleLogout();
+      }
     } else {
       setLoading(false);
     }
@@ -211,10 +250,21 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    try {
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+
+  const resetData = () => {
+    if (window.confirm("Are you sure you want to reset all data to defaults? This will clear all your progress.")) {
+      localStorage.removeItem('protrack_data');
+      window.location.reload();
+    }
   };
 
   const updateTask = (taskId: string, updates: Partial<Task>) => {
@@ -306,10 +356,10 @@ export default function App() {
     const overallProgress = total > 0 ? tasks.reduce((acc, t) => acc + t.completion, 0) / total : 0;
     
     const now = new Date().getTime();
-    const delayed = tasks.filter(t => t.status !== 'Completed' && new Date(t.deadline).getTime() < now).length;
+    const delayed = tasks.filter(t => t.status !== 'Completed' && t.deadline && new Date(t.deadline).getTime() < now).length;
 
     // Weekly progress
-    const weeks = Array.from(new Set(tasks.map(t => t.week))).sort((a: number, b: number) => a - b);
+    const weeks = Array.from(new Set(tasks.map(t => t.week))).sort();
     const weeklyProgress = weeks.map(w => {
       const weekTasks = tasks.filter(t => t.week === w);
       const progress = weekTasks.reduce((acc, t) => acc + t.completion, 0) / weekTasks.length;
@@ -376,20 +426,6 @@ export default function App() {
       body: stats.weeklyProgress.map(w => [`Week ${w.week}`, `${Math.round(w.progress)}%`]),
     });
 
-    // User Performance
-    const userStats = Array.from(new Set(tasks.map(t => t.owner))).map(owner => {
-      const userTasks = tasks.filter(t => t.owner === owner);
-      const completed = userTasks.filter(t => t.status === 'Completed').length;
-      return [owner, userTasks.length, completed, `${Math.round((completed / userTasks.length) * 100)}%`];
-    });
-
-    doc.text("User Performance", 14, (doc as any).lastAutoTable.finalY + 10);
-    (doc as any).autoTable({
-      startY: (doc as any).lastAutoTable.finalY + 15,
-      head: [['User', 'Tasks Assigned', 'Tasks Completed', 'Completion %']],
-      body: userStats,
-    });
-
     doc.save("project-report.pdf");
   };
 
@@ -449,55 +485,11 @@ export default function App() {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-100">
-            <button 
-              onClick={() => setShowPublicTasks(!showPublicTasks)}
-              className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors font-medium"
-            >
-              <CheckSquare className="w-5 h-5" />
-              {showPublicTasks ? 'Hide Tasks' : 'See Tasks'}
-            </button>
+          <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+            <p className="text-[10px] text-gray-400 font-medium italic">
+              Note: If you don't see the new task list, please log in and use the "Reset Data" button in the sidebar.
+            </p>
           </div>
-
-          {showPublicTasks && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mt-6 space-y-3 overflow-hidden"
-            >
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Current Project Tasks</h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                {publicTasks.map(task => (
-                  <div key={task.id} className="p-3 rounded-xl bg-gray-50 border border-gray-100 hover:border-emerald-200 transition-colors">
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="text-xs font-bold text-emerald-600 uppercase tracking-tighter bg-emerald-50 px-2 py-0.5 rounded-full">
-                        Week {task.week}
-                      </span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                        task.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                        task.status === 'In Progress' ? 'bg-amber-100 text-amber-700' :
-                        'bg-gray-200 text-gray-700'
-                      }`}>
-                        {task.status}
-                      </span>
-                    </div>
-                    <h4 className="text-sm font-semibold text-gray-800 leading-tight">{task.task}</h4>
-                    <div className="flex items-center gap-3 mt-2">
-                      <div className="flex items-center gap-1 text-[10px] text-gray-500">
-                        <Users className="w-3 h-3" />
-                        {task.owner}
-                      </div>
-                      <div className="flex items-center gap-1 text-[10px] text-gray-500">
-                        <Clock className="w-3 h-3" />
-                        {task.deadline}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-          
         </motion.div>
       </div>
     );
@@ -526,14 +518,14 @@ export default function App() {
             Dashboard
           </button>
           <button 
-            onClick={() => setView('my-tasks')}
+            onClick={() => setView('task-board')}
             className={cn(
               "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium",
-              view === 'my-tasks' ? "bg-gray-900 text-white shadow-lg shadow-gray-900/10" : "text-gray-500 hover:bg-black/5"
+              view === 'task-board' ? "bg-gray-900 text-white shadow-lg shadow-gray-900/10" : "text-gray-500 hover:bg-black/5"
             )}
           >
             <CheckSquare size={20} />
-            My Tasks
+            Task Board
           </button>
           <button 
             onClick={() => setView('reports')}
@@ -559,7 +551,14 @@ export default function App() {
           )}
         </nav>
 
-        <div className="p-4 border-t border-black/5">
+        <div className="p-4 border-t border-black/5 space-y-2">
+          <button 
+            onClick={resetData}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-amber-600 hover:bg-amber-50 transition-all font-medium"
+          >
+            <AlertCircle size={20} />
+            Reset Data
+          </button>
           <button 
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all font-medium"
@@ -576,7 +575,7 @@ export default function App() {
           <div>
             <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
               {view === 'dashboard' && 'Project Dashboard'}
-              {view === 'my-tasks' && 'My Tasks'}
+              {view === 'task-board' && 'Task Board'}
               {view === 'reports' && 'Project Reports'}
               {view === 'admin' && 'Admin Control Panel'}
             </h2>
@@ -773,35 +772,6 @@ export default function App() {
                       </button>
                     </Card>
 
-                    {/* Activity Log */}
-                    <Card className="h-full">
-                      <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                        <Clock size={20} className="text-blue-500" />
-                        Recent Activity
-                      </h3>
-                      <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                        {logs.length === 0 ? (
-                          <p className="text-center text-gray-400 py-8 italic">No activity yet</p>
-                        ) : logs.slice(0, 5).map(log => (
-                          <div key={log.id} className="relative pl-6 border-l-2 border-gray-100 pb-2">
-                            <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-emerald-500" />
-                            <p className="text-sm font-bold text-gray-900">{log.userName}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              Updated <span className="font-semibold text-gray-700">{log.taskUpdated}</span>
-                            </p>
-                            <div className="mt-2 flex items-center gap-2">
-                              <span className="text-[10px] px-2 py-0.5 bg-gray-100 rounded-full text-gray-500 font-bold uppercase">
-                                {log.oldStatus} → {log.newStatus}
-                              </span>
-                            </div>
-                            <p className="text-[10px] text-gray-400 mt-2 font-medium">
-                              {new Date(log.timestamp).toLocaleTimeString()}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </Card>
-
                     {/* AI Assistant */}
                     <Card className="bg-gray-900 text-white border-none shadow-xl shadow-gray-900/20">
                       <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -841,7 +811,83 @@ export default function App() {
               </motion.div>
             )}
 
-            {(view === 'my-tasks' || view === 'admin') && (
+            {view === 'task-board' && (
+              <motion.div 
+                key="task-board"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-6"
+              >
+                <Card className="overflow-hidden p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-100">
+                          <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Week</th>
+                          <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Focus</th>
+                          <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Task</th>
+                          <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Owner</th>
+                          <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Priority</th>
+                          <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Status</th>
+                          <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Completion %</th>
+                          <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Start Date</th>
+                          <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Deadline</th>
+                          <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tasks.map(task => (
+                          <tr key={task.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                            <td className="py-4 px-6 font-bold text-gray-900">{task.week}</td>
+                            <td className="py-4 px-6 text-sm text-gray-600">{task.focusArea}</td>
+                            <td className="py-4 px-6 font-semibold text-gray-900">{task.task}</td>
+                            <td className="py-4 px-6 text-sm text-gray-600">{task.owner || '-'}</td>
+                            <td className="py-4 px-6">
+                              {task.priority ? (
+                                <span className={cn(
+                                  "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                                  task.priority === 'High' ? "bg-red-50 text-red-600" :
+                                  task.priority === 'Medium' ? "bg-amber-50 text-amber-600" :
+                                  "bg-blue-50 text-blue-600"
+                                )}>
+                                  {task.priority}
+                                </span>
+                              ) : '-'}
+                            </td>
+                            <td className="py-4 px-6">
+                              {task.status ? (
+                                <span className={cn(
+                                  "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                                  task.status === 'Completed' ? "bg-emerald-50 text-emerald-600" :
+                                  task.status === 'In Progress' ? "bg-amber-100 text-amber-700" :
+                                  "bg-gray-100 text-gray-500"
+                                )}>
+                                  {task.status}
+                                </span>
+                              ) : '-'}
+                            </td>
+                            <td className="py-4 px-6">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 min-w-[60px]">
+                                  <ProgressBar value={task.completion} />
+                                </div>
+                                <span className="text-xs font-bold text-gray-900">{task.completion}%</span>
+                              </div>
+                            </td>
+                            <td className="py-4 px-6 text-sm text-gray-600">{task.startDate || '-'}</td>
+                            <td className="py-4 px-6 text-sm text-gray-600">{task.deadline || '-'}</td>
+                            <td className="py-4 px-6 text-sm text-gray-600">{task.notes || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+
+            {view === 'admin' && (
               <motion.div 
                 key="tasks"
                 initial={{ opacity: 0, y: 10 }}
@@ -973,9 +1019,20 @@ export default function App() {
                                 </div>
                               </td>
                               <td className="py-4 px-4">
-                                <button className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all">
-                                  <ChevronRight size={18} />
-                                </button>
+                                {task.status !== 'Completed' ? (
+                                  <button 
+                                    onClick={() => updateTask(task.id, { status: 'Completed', completion: 100 })}
+                                    className="flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg transition-all"
+                                  >
+                                    <CheckSquare size={14} />
+                                    Complete
+                                  </button>
+                                ) : (
+                                  <div className="flex items-center gap-1 text-xs font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg cursor-default">
+                                    <CheckSquare size={14} />
+                                    Done
+                                  </div>
+                                )}
                               </td>
                             </tr>
                           );
