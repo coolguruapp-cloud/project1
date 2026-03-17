@@ -1,5 +1,5 @@
 {
-  "name": "ProTrack Dashboard",
+  "name": "Task Tracker",
   "description": "A comprehensive project progress tracking dashboard with multi-user support, automated progress calculation, and report generation.",
   "requestFramePermissions": []
 }
